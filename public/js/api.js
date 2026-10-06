@@ -44,7 +44,7 @@
         body: options.body === undefined ? undefined : JSON.stringify(options.body),
       });
       const actorId = response.headers.get('X-AgentTT-User-Id');
-      if (path !== '/login' && path !== '/session' && session.user && actorId && actorId !== session.user.id) {
+      if (path !== '/login' && path !== '/session' && actorId && actorId !== session.user?.id) {
         clearSession();
         throw new ApiError('帳號已在其他分頁切換，請重新確認登入狀態。', 401, 'SESSION_CHANGED');
       }

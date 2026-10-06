@@ -27,6 +27,7 @@ function buildTripDetails(\PDO $db, array $row, array $user): array
     return [
         'trip' => $trip, 'items' => $items, 'expenses' => $expenses,
         'summary' => calculateExpenseSummary($trip, $expenses),
+        'invitations' => $row['owner_id'] === $user['id'] ? getOwnerInvitations($db, $row['id']) : [],
     ];
 }
 

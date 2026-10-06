@@ -1,0 +1,61 @@
+/* Registration and trip membership share the existing Agent TT palette. */
+.register-page { padding: 24px; }
+.register-page .register-wrap { min-width: 0; }
+.register-page .login-right { min-width: 0; }
+.register-page .login-logo-row { margin-bottom: 16px; }
+.register-title { font-size: 22px; line-height: 1.5; margin-bottom: 12px; }
+.register-scope { margin-bottom: 20px; }
+.register-page .form-group { margin-bottom: 14px; }
+.register-page .form-input { min-width: 0; }
+.register-status { font-size: 13px; color: var(--color-text-sub); line-height: 1.8; margin-bottom: 12px; overflow-wrap: anywhere; }
+.register-login-note { font-size: 13px; color: var(--color-text-sub); margin-top: 20px; }
+.membership-text-link { color: var(--color-primary); text-decoration: underline; text-underline-offset: 3px; }
+.membership-help { font-size: 12px; color: var(--color-text-sub); line-height: 1.8; }
+.membership-notice, .membership-success { padding: 16px; border-radius: 8px; line-height: 1.8; font-size: 13px; overflow-wrap: anywhere; margin-bottom: 20px; }
+.membership-notice { background: var(--color-warning); color: var(--color-warning-text); }
+.membership-notice .membership-text-link { display: inline-block; margin-top: 8px; }
+.membership-success { background: var(--color-success); color: var(--color-success-text); }
+.membership-success h2 { font-size: 17px; margin-bottom: 8px; }
+.membership-success .btn { margin-top: 14px; }
+.membership-error { font-size: 13px; line-height: 1.8; color: var(--color-danger-text); background: var(--color-danger); padding: 10px 12px; border-radius: 6px; margin: 12px 0; overflow-wrap: anywhere; }
+.membership-retry { margin-top: 12px; }
+.register-page button:disabled { cursor: not-allowed; }
+.register-page a:focus-visible, .register-page button:focus-visible { outline: 3px solid var(--color-accent-yellow); outline-offset: 3px; }
+.membership-section { margin-bottom: 28px; }
+.membership-list { min-width: 0; }
+.membership-card, .invitation-card { display: flex; align-items: flex-start; gap: 16px; border: 1px solid var(--color-border-light); border-radius: 10px; padding: 16px; margin-bottom: 12px; background: #fff; min-width: 0; }
+.membership-body, .invitation-body { flex: 1; min-width: 0; }
+.membership-name, .invitation-name { font-size: 15px; font-weight: 600; color: var(--color-text-main); line-height: 1.6; overflow-wrap: anywhere; }
+.membership-meta, .invitation-meta { font-size: 12px; color: var(--color-text-sub); line-height: 1.8; margin-top: 5px; overflow-wrap: anywhere; }
+.membership-card p, .invitation-card p { overflow-wrap: anywhere; }
+.membership-actions, .invitation-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; flex-shrink: 0; }
+.membership-status { display: inline-flex; align-items: center; border-radius: 99px; padding: 3px 10px; font-size: 11px; line-height: 1.6; background: #edebe4; color: var(--color-text-sub); white-space: nowrap; }
+.membership-status.pending { background: var(--color-warning); color: var(--color-warning-text); }
+.membership-status.accepted { background: var(--color-success); color: var(--color-success-text); }
+.membership-status.declined, .membership-status.revoked { background: #edebe4; color: var(--color-text-sub); }
+.membership-invite-controls { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+.membership-invite-controls .form-group { flex: 1 1 230px; margin-bottom: 0; min-width: 0; }
+.membership-invite-controls .btn { min-height: 44px; }
+.membership-invitations-heading { margin-top: 28px; }
+.membership-inbox { margin-top: 24px; }
+.membership-action-status { font-size: 13px; line-height: 1.8; color: var(--color-text-sub); margin-top: 8px; overflow-wrap: anywhere; }
+.membership-page .modal-body > p, .invitations-page .modal-body > p { overflow-wrap: anywhere; }
+.membership-page .detail-conflict label, .invitations-page .detail-conflict label { line-height: 1.8; }
+@media (max-width: 800px) {
+  .membership-card, .invitation-card { flex-wrap: wrap; }
+  .membership-actions, .invitation-actions { flex-basis: 100%; justify-content: flex-end; }
+}
+@media (max-width: 650px) {
+  .register-page { padding: 20px; }
+  .register-page .login-wrap { width: 100%; margin: 0; min-height: 0; }
+  .register-page .login-right { padding: 28px 24px; }
+}
+@media (max-width: 480px) {
+  .register-page { padding: 16px; }
+  .register-page .login-right { padding: 24px 20px; }
+  .register-title { font-size: 20px; }
+  .membership-card, .invitation-card { padding: 14px; }
+  .membership-invite-controls { gap: 10px; }
+  .membership-invite-controls .form-group { flex-basis: 100%; }
+  .membership-invite-controls > .btn { width: 100%; }
+}

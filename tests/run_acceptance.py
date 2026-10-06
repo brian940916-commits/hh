@@ -73,12 +73,15 @@ def main():
                 wait_ready(process, base)
                 subprocess.run([sys.executable, str(ROOT / "tests/backend_http.py"), "--base-url", base, "--data-dir", str(data_dir), "--php", args.php], env=env, check=True)
                 subprocess.run([sys.executable, str(ROOT / "tests/backend_phase2.py"), "--base-url", base, "--data-dir", str(data_dir), "--php", args.php], env=env, check=True)
+                subprocess.run([sys.executable, str(ROOT / "tests/backend_phase3.py"), "--base-url", base, "--data-dir", str(data_dir), "--php", args.php], env=env, check=True)
                 databases = list(data_dir.glob("*.sqlite")) + list(data_dir.glob("*.sqlite3")) + list(data_dir.glob("*.db"))
                 if len(databases) != 1:
                     raise RuntimeError("Expected a single acceptance SQLite database")
                 with sqlite3.connect(databases[0]) as db:
                     tables = [row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")]
                     before = {table: db.execute('SELECT * FROM "' + table + '" ORDER BY 1,2').fetchall() for table in tables}
+                session_dir = data_dir / "sessions"
+                session_before = {path.name: path.read_bytes() for path in session_dir.glob("sess_*")}
                 stop(process)
                 process = subprocess.Popen(command, cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT)
                 wait_ready(process, base)
@@ -86,7 +89,10 @@ def main():
                     after = {table: db.execute('SELECT * FROM "' + table + '" ORDER BY 1,2').fetchall() for table in tables}
                 if before != after:
                     raise AssertionError("Server restart changed or lost SQLite rows")
-                print("PASS: trips, items, expenses, participants and receipts survive a real PHP server restart", flush=True)
+                session_after = {path.name: path.read_bytes() for path in session_dir.glob("sess_*")}
+                if not session_before or session_before != session_after:
+                    raise AssertionError("Server restart changed or lost existing PHP session files")
+                print("PASS: all SQLite tables and existing PHP session bytes survive a real PHP server restart", flush=True)
                 if args.http_only:
                     print("Browser tests not requested (--http-only).", flush=True)
                 else:
@@ -94,6 +100,7 @@ def main():
                     env["AGENTTT_PHASE2_MEMBER_TRIP_ID"] = json.loads(fixture.stdout)["memberTripId"]
                     subprocess.run(["node", str(ROOT / "tests/browser_acceptance.cjs")], cwd=ROOT, env=env, check=True)
                     subprocess.run(["node", str(ROOT / "tests/browser_phase2.cjs")], cwd=ROOT, env=env, check=True)
+                    subprocess.run(["node", str(ROOT / "tests/browser_phase3.cjs")], cwd=ROOT, env=env, check=True)
         except Exception:
             stop(process)
             print("PHP server log:", file=sys.stderr)

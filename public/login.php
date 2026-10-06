@@ -28,7 +28,8 @@ $illustration = ($start !== false && $end !== false) ? substr($legacy, $start, $
       <button class="btn btn-primary btn-full" id="login-submit-btn" type="submit" disabled>登入</button>
       <button class="btn btn-outline btn-full" id="session-retry-btn" type="button" hidden style="margin-top:12px">重新連線</button>
     </form>
-    <p style="font-size:12px;color:#8A8073;line-height:1.8;margin-top:20px">練習帳號請見啟動說明。註冊、忘記密碼、Google 與手機登入尚未開放。</p>
+    <p style="font-size:13px;margin-top:18px">還沒有帳號？<a id="register-link" href="register.php" style="text-decoration:underline">建立旅客帳號</a></p>
+    <p style="font-size:12px;color:#8A8073;line-height:1.8;margin-top:20px">練習帳號請見啟動說明。忘記密碼、Google 與手機登入尚未開放。</p>
     <noscript><p class="error-msg">請開啟 JavaScript 後使用此平台。</p></noscript>
   </div>
 </main>

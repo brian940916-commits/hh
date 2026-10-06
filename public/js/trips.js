@@ -80,6 +80,9 @@
     const link = element('a', 'navbar-link active', '我的行程');
     link.href = 'trip-list.php';
     inner.append(link);
+    const inbox = element('a', 'navbar-link', '收到的邀請');
+    inbox.href = 'invitations.php';
+    inner.append(inbox);
     const account = element('div', 'nav-user');
     account.style.marginLeft = 'auto';
     const role = { guest: '旅客', host: '房東', admin: '管理員' }[user.role] || '會員';
@@ -121,6 +124,10 @@
     expenses.href = 'trip-expense.php' + query;
     expenses.dataset.action = 'expenses';
     actions.append(details, expenses);
+    const members = element('a', 'btn btn-outline btn-sm', '行程成員');
+    members.href = 'trip-collab.php' + query;
+    members.dataset.action = 'members';
+    actions.append(members);
     if (editable(trip)) {
       const edit = element('button', 'btn btn-primary btn-sm', '編輯基本資料');
       edit.dataset.action = 'edit';

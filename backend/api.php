@@ -20,13 +20,23 @@ function dispatchApi(): void
         jsonResponse(['user' => currentUser($db), 'csrfToken' => $_SESSION['csrf_token']]);
         return;
     }
+    if ($path === '/register' && $method === 'POST') {
+        $actor = currentUser($db);
+        if ($actor !== null) {
+            header('X-AgentTT-User-Id: ' . $actor['id']);
+            throw new ApiError(403, 'ALREADY_AUTHENTICATED', '你已登入，請先登出再建立其他帳號。');
+        }
+        requireCsrf();
+        jsonResponse(registerGuest($db, readJsonBody()), 201);
+        return;
+    }
     if ($path === '/login' && $method === 'POST') {
         requireCsrf();
         $body = readJsonBody();
         rejectUnknownFields($body, ['email', 'password']);
         $email = is_string($body['email'] ?? null) ? strtolower(trim($body['email'])) : '';
         $password = is_string($body['password'] ?? null) ? $body['password'] : '';
-        if (strlen($email) > 254 || strlen($password) > 1024) {
+        if (strlen($email) > 254 || strlen($password) > 72 || str_contains($password, "\0")) {
             throw new ApiError(401, 'INVALID_CREDENTIALS', '電子郵件或密碼不正確。');
         }
         $statement = $db->prepare('SELECT * FROM users WHERE email = ?');
@@ -61,6 +71,25 @@ function dispatchApi(): void
         jsonResponse(null, 204);
         return;
     }
+    if ($path === '/invitations') {
+        $user = requireUser($db);
+        if ($method !== 'GET') {
+            header('Allow: GET');
+            throw new ApiError(405, 'METHOD_NOT_ALLOWED', '此 API 不支援這個操作。');
+        }
+        jsonResponse(getIncomingInvitations($db, $user));
+        return;
+    }
+    if (preg_match('#^/invitations/([A-Za-z0-9_-]{1,100})/(accept|decline)$#D', $path, $matches)) {
+        $user = requireUser($db);
+        if ($method !== 'POST') {
+            header('Allow: POST');
+            throw new ApiError(405, 'METHOD_NOT_ALLOWED', '此 API 不支援這個操作。');
+        }
+        requireCsrf();
+        jsonResponse(respondToInvitation($db, $user, $matches[1], $matches[2], readJsonBody()));
+        return;
+    }
     if ($path === '/trips') {
         $user = requireUser($db);
         if ($method === 'GET') {
@@ -80,6 +109,36 @@ function dispatchApi(): void
         }
         header('Allow: GET, POST');
         throw new ApiError(405, 'METHOD_NOT_ALLOWED', '此 API 不支援這個操作。');
+    }
+    if (preg_match('#^/trips/([A-Za-z0-9_-]{1,100})/invitations$#D', $path, $matches)) {
+        $user = requireUser($db);
+        if ($method !== 'POST') {
+            header('Allow: POST');
+            throw new ApiError(405, 'METHOD_NOT_ALLOWED', '此 API 不支援這個操作。');
+        }
+        requireCsrf();
+        jsonResponse(createTripInvitation($db, $user, $matches[1], readJsonBody()), 201);
+        return;
+    }
+    if (preg_match('#^/trips/([A-Za-z0-9_-]{1,100})/invitations/([A-Za-z0-9_-]{1,100})$#D', $path, $matches)) {
+        $user = requireUser($db);
+        if ($method !== 'DELETE') {
+            header('Allow: DELETE');
+            throw new ApiError(405, 'METHOD_NOT_ALLOWED', '此 API 不支援這個操作。');
+        }
+        requireCsrf();
+        jsonResponse(revokeTripInvitation($db, $user, $matches[1], $matches[2], readJsonBody()));
+        return;
+    }
+    if (preg_match('#^/trips/([A-Za-z0-9_-]{1,100})/members/([A-Za-z0-9_-]{1,100})$#D', $path, $matches)) {
+        $user = requireUser($db);
+        if ($method !== 'DELETE') {
+            header('Allow: DELETE');
+            throw new ApiError(405, 'METHOD_NOT_ALLOWED', '此 API 不支援這個操作。');
+        }
+        requireCsrf();
+        jsonResponse(removeTripMember($db, $user, $matches[1], $matches[2], readJsonBody()));
+        return;
     }
     if (preg_match('#^/trips/([A-Za-z0-9_-]{1,100})/details$#D', $path, $matches)) {
         $user = requireUser($db);
@@ -149,7 +208,7 @@ function dispatchApi(): void
         header('Allow: GET, PATCH, DELETE');
         throw new ApiError(405, 'METHOD_NOT_ALLOWED', '此 API 不支援這個操作。');
     }
-    $methods = ['/health' => 'GET', '/session' => 'GET', '/login' => 'POST', '/logout' => 'POST'];
+    $methods = ['/health' => 'GET', '/session' => 'GET', '/register' => 'POST', '/login' => 'POST', '/logout' => 'POST'];
     if (isset($methods[$path])) {
         header('Allow: ' . $methods[$path]);
         throw new ApiError(405, 'METHOD_NOT_ALLOWED', '此 API 不支援這個操作。');

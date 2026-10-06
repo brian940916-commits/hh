@@ -28,13 +28,16 @@ python3 tests/run_acceptance.py --http-only
 
 版本衝突後若最新資料讀取也失敗，預算、行程項目與費用草稿必須保留；重試只能讀取資料，取得最新內容並明確核對後才能再次寫入。測試會核對請求次數，防止重新載入頁面丟失草稿或自動重送修改。
 
-`migration_acceptance.py` 從凍結的第一階段 schema 建立既有資料，驗證升級後帳號、密碼雜湊、自訂行程、成員與請求紀錄保持原值，重複執行也不重建資料。runner 會真正停止、重啟 PHP，核對所有 SQLite 表的內容，而不只檢查行程數量。
+第三階段增加匿名註冊、兩個真實新帳號的邀請與接受流程、拒絕後重邀、取消邀請、成員移除及費用引用保護。HTTP 檢查涵蓋角色欄位拒絕、email 正規化與重複帳號、密碼字元／72 bytes 上限、CSRF、權限與邀請版本、匿名冪等 HMAC、接受與拒絕並發、舊收據與目前權限區別。瀏覽器從實際註冊頁、成員頁及收到邀請頁操作。
+
+`migration_acceptance.py` 分別從凍結的 schema 1（提交 `625fea6`）與完整 schema 2（提交 `5201d4f`）建立既有資料，驗證升級至 schema 3 後帳號、密碼雜湊、自訂行程、項目、費用、分攤成員、請求紀錄與 session 原始內容保持原值，重複執行也不重建資料。已刪掉的示範帳號與行程不會重新 seed；未知較新 schema 會失敗且不改資料。runner 會真正停止、重啟 PHP，核對所有 SQLite 表與既有 session 檔的內容。
 
 HTTP 測試也可連接已啟動的**隔離測試伺服器**；因為會建立行程與 member fixture，請勿指向練習者自己的資料庫。Apache 子目錄也支援：
 
 ```sh
 python3 tests/backend_http.py --base-url http://127.0.0.1/hh/public --data-dir /tmp/agenttt-test-data --php php
 python3 tests/backend_phase2.py --base-url http://127.0.0.1/hh/public --data-dir /tmp/agenttt-test-data --php php
+python3 tests/backend_phase3.py --base-url http://127.0.0.1/hh/public --data-dir /tmp/agenttt-test-data --php php
 ```
 
 若環境已備有 Playwright 與 Chromium，可透過 `--playwright-module` 與 `--chromium` 指定既有安裝。原有 `npm test` 是失敗占位指令，`test-bugs.js` 檢查的是舊的公開靜態網站，兩者都不能取代這些驗收。

@@ -7,6 +7,6 @@ DirectoryIndex index.php
 </FilesMatch>
 
 # Only the intentionally public PHP entrypoints can be requested directly.
-<FilesMatch "(?i)^(?!(?:index|login|trip-list|trip-edit|trip-expense|assets)\.php$).*\.php$">
+<FilesMatch "(?i)^(?!(?:index|login|register|invitations|trip-list|trip-edit|trip-expense|trip-collab|assets)\.php$).*\.php$">
     Require all denied
 </FilesMatch>

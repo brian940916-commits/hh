@@ -84,7 +84,22 @@
       this.options.render(snapshot);
       this.updateControls();
     }
-    async refresh() { this.apply(await api.request(this.path + '/details')); }
+    async refresh() {
+      try { this.apply(await api.request(this.path + '/details')); }
+      catch (error) {
+        if (error.status === 404 && !this.invalidated) {
+          this.snapshot = null;
+          byId('detail-content').hidden = true;
+          byId('detail-title').textContent = '行程無法查看';
+          byId('detail-meta').textContent = '';
+          byId('permission-note').textContent = '行程已刪除，或你已不再是此行程的成員。';
+          ['item-list', 'expense-list', 'category-summary', 'balances-list', 'settlements-list', 'members-list', 'trip-invitations-list']
+            .forEach(id => { const value = byId(id); if (value) value.replaceChildren(); });
+          this.updateControls();
+        }
+        throw error;
+      }
+    }
     savedButRefreshFailed(text) {
       if (this.invalidated) return;
       this.snapshot = null;
@@ -102,6 +117,8 @@
       brand.href = 'trip-list.php';
       const list = node('a', 'navbar-link', '我的行程');
       list.href = 'trip-list.php';
+      const inbox = node('a', 'navbar-link', '收到的邀請');
+      inbox.href = 'invitations.php';
       const account = node('div', 'nav-user');
       account.style.marginLeft = 'auto';
       account.append(node('span', 'account-info', `${this.user.name} · ${this.user.email}`));
@@ -112,10 +129,10 @@
         catch (error) { if (!this.invalidated) this.message('登出未完成。' + error.message, true); }
       }));
       account.append(logout);
-      inner.append(brand, list, account);
+      inner.append(brand, list, inbox, account);
       nav.append(inner);
       byId('navbar-container').replaceChildren(nav);
-      const links = [['trip-edit.php', '行程編排'], ['trip-expense.php', '費用管理']].map(([file, label]) => {
+      const links = [['trip-edit.php', '行程編排'], ['trip-expense.php', '費用管理'], ['trip-collab.php', '行程成員']].map(([file, label]) => {
         const link = node('a', 'btn btn-outline btn-sm', label);
         link.href = file + '?tripId=' + encodeURIComponent(this.id);
         if (file === this.options.file) link.classList.add('active');
@@ -219,8 +236,8 @@
       } catch (error) {
         if (!this.state || this.page.invalidated) return;
         this.state.conflict = false;
-        this.retry.hidden = false;
-        feedback(this.prefix + '-error', '最新資料載入失敗。你的輸入仍保留，請重新取得最新資料，再核對後儲存。 ' + error.message);
+        this.retry.hidden = error.status === 404;
+        feedback(this.prefix + '-error', error.status === 404 ? '行程已刪除或無法查看。你的輸入仍保留，請關閉視窗。' : '最新資料載入失敗。你的輸入仍保留，請重新取得最新資料，再核對後儲存。 ' + error.message);
       }
     }
     async save() {

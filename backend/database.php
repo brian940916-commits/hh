@@ -20,10 +20,10 @@ function openDatabase(): \PDO
     $db->exec('PRAGMA foreign_keys = ON');
     $db->exec('PRAGMA busy_timeout = 5000');
     $schemaVersion = (int) $db->query('PRAGMA user_version')->fetchColumn();
-    if ($schemaVersion > 2) {
+    if ($schemaVersion > 3) {
         throw new \RuntimeException('Database schema is newer than this application.');
     }
-    if ($schemaVersion < 2) {
+    if ($schemaVersion < 3) {
         initializeDatabase($db);
     }
     return $db;
@@ -52,7 +52,7 @@ function initializeDatabase(\PDO $db): void
     writeTransaction($db, function () use ($db): void {
         // Another connection may have initialized while this connection waited.
         $version = (int) $db->query('PRAGMA user_version')->fetchColumn();
-        if ($version > 2) {
+        if ($version > 3) {
             throw new \RuntimeException('Database schema is newer than this application.');
         }
         if ($version === 0) {
@@ -96,6 +96,32 @@ CREATE TABLE IF NOT EXISTS expense_participants (
 );
 SQL);
             $db->exec('PRAGMA user_version = 2');
+        }
+        if ($version < 3) {
+            $db->exec(<<<'SQL'
+CREATE TABLE IF NOT EXISTS registration_receipts (
+    scope_id TEXT NOT NULL,
+    operation TEXT NOT NULL,
+    request_key TEXT NOT NULL,
+    payload_hash TEXT NOT NULL,
+    response_json TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (scope_id, operation, request_key)
+);
+CREATE TABLE IF NOT EXISTS trip_invitations (
+    id TEXT PRIMARY KEY,
+    trip_id TEXT NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
+    recipient_id TEXT NOT NULL REFERENCES users(id),
+    invited_by TEXT NOT NULL REFERENCES users(id),
+    status TEXT NOT NULL CHECK (status IN ('pending', 'accepted', 'declined', 'revoked')),
+    version INTEGER NOT NULL DEFAULT 1 CHECK (version > 0),
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    UNIQUE (trip_id, recipient_id)
+);
+CREATE INDEX IF NOT EXISTS trip_invitations_recipient_idx ON trip_invitations(recipient_id, status, updated_at);
+SQL);
+            $db->exec('PRAGMA user_version = 3');
         }
     });
 }

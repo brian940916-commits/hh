@@ -5,6 +5,8 @@
   let ready = false;
   let pending = false;
   const accounts = { guest: 'test@test.com', host: 'host@test.com', admin: 'admin@test.com' };
+  const suggestedEmail = new URLSearchParams(location.search).get('email');
+  if (suggestedEmail && suggestedEmail.length <= 254) byId('login-email').value = suggestedEmail;
 
   function showError(message) {
     byId('login-error').textContent = message;

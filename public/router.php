@@ -24,7 +24,7 @@ if ($path === '/api/index.php' || $path === '/api' || str_starts_with($path, '/a
     require __DIR__ . '/api/index.php';
     return true;
 }
-if (str_ends_with(strtolower($path), '.php') && !in_array($path, ['/index.php', '/login.php', '/trip-list.php', '/trip-edit.php', '/trip-expense.php', '/assets.php'], true)) {
+if (str_ends_with(strtolower($path), '.php') && !in_array($path, ['/index.php', '/login.php', '/register.php', '/invitations.php', '/trip-list.php', '/trip-edit.php', '/trip-expense.php', '/trip-collab.php', '/assets.php'], true)) {
     http_response_code(404);
     echo 'Not found';
     return true;

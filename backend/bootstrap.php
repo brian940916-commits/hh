@@ -122,4 +122,6 @@ require_once __DIR__ . '/database.php';
 require_once __DIR__ . '/trips.php';
 require_once __DIR__ . '/trip-details.php';
 require_once __DIR__ . '/expense-summary.php';
+require_once __DIR__ . '/registration.php';
+require_once __DIR__ . '/trip-invitations.php';
 require_once __DIR__ . '/api.php';
