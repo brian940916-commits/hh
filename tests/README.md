@@ -1,4 +1,4 @@
-# 第一階段驗收
+# PHP 與瀏覽器驗收
 
 測試會真的啟動 PHP 伺服器，以臨時 SQLite 與 session 目錄測試；不會讀寫你在 XAMPP 建立的資料。失敗會回傳非零退出碼。GitHub Actions 使用同一份測試，而 GitHub Pages 不能執行 PHP。
 
@@ -24,10 +24,17 @@ python3 tests/run_acceptance.py --http-only
 
 此模式明確略過瀏覽器檢查，不宣稱所有驗收已完成。完整模式驗證登入、cookie 身分隔離、清除 localStorage 後的持久化、行程 CRUD、載入畫面、寫入失敗保留表單、回應遺失後的冪等重試、多分頁版本衝突、另一分頁切換帳號後的身分同步、401 重新登入與文字轉義。
 
+第二階段增加逐日行程項目的新增、修改、刪除、排序及移動日期，費用、付款者、分攤成員、預算與結算。HTTP 檢查包含成員唯讀、子項目不能跨行程修改、全行程版本衝突、同時重送的冪等性、整數金額餘數與零和結算。瀏覽器檢查以實際頁面操作驗證，包含手機寬度、表單失敗保留輸入與多分頁操作。
+
+版本衝突後若最新資料讀取也失敗，預算、行程項目與費用草稿必須保留；重試只能讀取資料，取得最新內容並明確核對後才能再次寫入。測試會核對請求次數，防止重新載入頁面丟失草稿或自動重送修改。
+
+`migration_acceptance.py` 從凍結的第一階段 schema 建立既有資料，驗證升級後帳號、密碼雜湊、自訂行程、成員與請求紀錄保持原值，重複執行也不重建資料。runner 會真正停止、重啟 PHP，核對所有 SQLite 表的內容，而不只檢查行程數量。
+
 HTTP 測試也可連接已啟動的**隔離測試伺服器**；因為會建立行程與 member fixture，請勿指向練習者自己的資料庫。Apache 子目錄也支援：
 
 ```sh
 python3 tests/backend_http.py --base-url http://127.0.0.1/hh/public --data-dir /tmp/agenttt-test-data --php php
+python3 tests/backend_phase2.py --base-url http://127.0.0.1/hh/public --data-dir /tmp/agenttt-test-data --php php
 ```
 
 若環境已備有 Playwright 與 Chromium，可透過 `--playwright-module` 與 `--chromium` 指定既有安裝。原有 `npm test` 是失敗占位指令，`test-bugs.js` 檢查的是舊的公開靜態網站，兩者都不能取代這些驗收。

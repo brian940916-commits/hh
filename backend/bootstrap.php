@@ -120,4 +120,6 @@ function jsonResponse(mixed $data, int $status = 200): void
 
 require_once __DIR__ . '/database.php';
 require_once __DIR__ . '/trips.php';
+require_once __DIR__ . '/trip-details.php';
+require_once __DIR__ . '/expense-summary.php';
 require_once __DIR__ . '/api.php';

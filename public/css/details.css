@@ -1,0 +1,90 @@
+/* Shared presentation for API-backed itinerary and expense pages. */
+.detail-page #app { min-width: 0; }
+.detail-page .page-container { width: 100%; }
+.detail-header { background: #fff; border-bottom: 1px solid var(--color-border-light); padding: 20px 0; }
+.detail-header .breadcrumb { margin-bottom: 10px; }
+.detail-page .trip-title-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+.detail-page .trip-main-title { font-size: 22px; line-height: 1.5; font-weight: 700; overflow-wrap: anywhere; }
+.detail-page .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.detail-meta { font-size: 13px; color: var(--color-text-sub); overflow-wrap: anywhere; }
+.permission-note { color: var(--color-text-sub); font-size: 12px; margin-top: 8px; }
+.detail-main { padding-top: 24px; padding-bottom: 48px; }
+.detail-message:not(:empty) { padding: 12px 16px; margin-top: 14px; border-radius: 8px; background: var(--color-success); color: var(--color-success-text); font-size: 13px; overflow-wrap: anywhere; }
+.detail-loading { padding: 32px 16px; color: var(--color-text-sub); text-align: center; }
+.detail-page .page-error { margin-top: 16px; }
+.detail-page .page-error .btn { margin-top: 12px; }
+.detail-page #detail-content { margin-top: 24px; }
+.detail-day-tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 2px solid var(--color-border-light); margin-bottom: 24px; padding: 0 2px; }
+.detail-day-tabs .day-tab { flex: 0 0 auto; padding: 12px 18px; font-size: 13px; white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -2px; color: var(--color-text-sub); }
+.detail-day-tabs .day-tab[aria-selected="true"], .detail-day-tabs .day-tab.active { border-bottom-color: var(--color-primary); color: var(--color-primary); font-weight: 700; }
+.detail-section-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0 0 16px; flex-wrap: wrap; }
+.detail-section-title { font-size: 17px; line-height: 1.5; font-weight: 700; color: var(--color-text-main); overflow-wrap: anywhere; }
+.detail-help { font-size: 12px; line-height: 1.8; color: var(--color-text-sub); margin: 10px 0; }
+.detail-warning { border-left: 4px solid var(--color-warning-text); background: var(--color-warning); color: var(--color-warning-text); padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; line-height: 1.8; overflow-wrap: anywhere; }
+.detail-item-list, .detail-expense-list { min-width: 0; }
+.detail-page .item-card, .detail-page .expense-card { display: flex; align-items: flex-start; gap: 12px; background: #fff; border: 1px solid var(--color-border-light); border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+.detail-page .item-body, .detail-page .expense-body { flex: 1; min-width: 0; }
+.detail-page .item-name, .detail-page .expense-name { overflow-wrap: anywhere; }
+.detail-page .item-meta, .detail-page .expense-meta { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; color: var(--color-text-sub); margin-top: 6px; }
+.detail-page .item-note, .detail-page .expense-note { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; color: var(--color-text-sub); margin-top: 8px; }
+.detail-page .item-actions, .detail-page .expense-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; flex-shrink: 0; }
+.detail-page .item-actions .btn, .detail-page .expense-actions .btn { font-size: 12px; padding: 5px 9px; }
+.detail-page .priority-badge { cursor: default; }
+.detail-page .priority-badge.optional { background: #edebe4; color: var(--color-text-sub); }
+.detail-empty, .detail-page .day-empty { padding: 32px 20px; border: 1px dashed var(--color-border); border-radius: 10px; color: var(--color-text-sub); text-align: center; background: rgba(255,255,255,.55); }
+.detail-panel { background: #fff; border: 1px solid var(--color-border-light); border-radius: 12px; padding: 20px; margin-bottom: 24px; min-width: 0; }
+.detail-panel .detail-section-title { margin-bottom: 12px; }
+.detail-budget-controls { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.detail-budget-controls .form-group { margin-bottom: 0; flex: 1 1 180px; max-width: 320px; }
+.detail-budget-controls .btn { min-height: 44px; }
+.detail-stats { margin-bottom: 24px; }
+.detail-stats .stats-card { min-width: 0; padding: 20px 12px; }
+.detail-stats .stats-value { font-size: clamp(19px, 2.4vw, 28px); overflow-wrap: anywhere; }
+.detail-stats .stats-card.over-budget::before { background: var(--color-accent-yellow); }
+.detail-summary-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; }
+.detail-page #category-summary > *, .detail-page #balances-list > *, .detail-page #settlements-list > * { overflow-wrap: anywhere; }
+.detail-summary-row, .balance-row, .settlement-row { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--color-border-light); font-size: 13px; }
+.detail-summary-row:last-child, .balance-row:last-child, .settlement-row:last-child { border-bottom: none; }
+.detail-amount, .expense-amount { font-variant-numeric: tabular-nums; font-weight: 700; }
+.detail-page .modal-backdrop { padding: 20px; overflow-y: auto; }
+.detail-modal { max-height: calc(100dvh - 40px); overscroll-behavior: contain; }
+.detail-modal .modal-header { flex-shrink: 0; gap: 12px; }
+.detail-modal .modal-body { min-width: 0; }
+.detail-modal .modal-footer { flex-wrap: wrap; flex-shrink: 0; }
+.detail-form-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 16px; }
+.detail-form-grid .form-group { min-width: 0; }
+.detail-page .form-input, .detail-page .form-select, .detail-page .form-textarea { min-width: 0; }
+.required-mark { color: var(--color-accent-red); }
+.detail-form-error { color: var(--color-danger-text); background: var(--color-danger); border-radius: 6px; padding: 10px 12px; margin-top: 14px; font-size: 13px; line-height: 1.8; overflow-wrap: anywhere; }
+.detail-conflict { color: var(--color-warning-text); background: var(--color-warning); padding: 12px; border-radius: 8px; margin: 12px 0; line-height: 1.8; overflow-wrap: anywhere; }
+.detail-conflict label, .detail-modal .conflict-review { display: block; font-size: 13px; }
+.detail-page input[type="checkbox"] { accent-color: var(--color-primary); }
+.detail-participants-fieldset { border: 0; padding: 0; min-width: 0; margin-bottom: 18px; }
+.detail-participant-options { display: flex; flex-wrap: wrap; gap: 8px; }
+.detail-participant-options label { display: flex; align-items: center; gap: 8px; border: 1px solid var(--color-border); border-radius: 6px; padding: 8px 12px; font-size: 13px; overflow-wrap: anywhere; max-width: 100%; }
+.detail-participant-options input { flex-shrink: 0; }
+.detail-page button:focus-visible, .detail-page a:focus-visible, .detail-page input[type="checkbox"]:focus-visible { outline: 3px solid var(--color-accent-yellow); outline-offset: 3px; }
+.detail-page button:disabled { cursor: not-allowed; }
+@media (max-width: 800px) {
+  .detail-page .page-container { padding-left: 20px; padding-right: 20px; }
+  .detail-page .detail-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .detail-summary-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .detail-page .item-card, .detail-page .expense-card { flex-wrap: wrap; }
+  .detail-page .item-actions, .detail-page .expense-actions { flex-basis: 100%; justify-content: flex-end; }
+}
+@media (max-width: 480px) {
+  .detail-page .page-container { padding-left: 16px; padding-right: 16px; }
+  .detail-main { padding-top: 16px; }
+  .detail-page .trip-main-title { font-size: 20px; }
+  .detail-page .header-actions { width: 100%; }
+  .detail-day-tabs .day-tab { padding: 12px 14px; }
+  .detail-panel { padding: 16px; }
+  .detail-page .stats-card { padding: 16px 8px; }
+  .detail-form-grid { grid-template-columns: minmax(0, 1fr); }
+  .detail-page .modal-backdrop { padding: 12px; }
+  .detail-modal { max-height: calc(100dvh - 24px); }
+  .detail-modal .modal-header, .detail-modal .modal-body { padding: 18px; }
+  .detail-modal .modal-footer { padding: 14px 18px; }
+  .detail-modal .modal-footer .btn { flex: 1 1 auto; padding-left: 12px; padding-right: 12px; }
+  .detail-budget-controls .form-group { max-width: none; }
+}

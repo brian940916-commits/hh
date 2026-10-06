@@ -81,6 +81,53 @@ function dispatchApi(): void
         header('Allow: GET, POST');
         throw new ApiError(405, 'METHOD_NOT_ALLOWED', '此 API 不支援這個操作。');
     }
+    if (preg_match('#^/trips/([A-Za-z0-9_-]{1,100})/details$#D', $path, $matches)) {
+        $user = requireUser($db);
+        if ($method !== 'GET') {
+            header('Allow: GET');
+            throw new ApiError(405, 'METHOD_NOT_ALLOWED', '此 API 不支援這個操作。');
+        }
+        jsonResponse(getTripDetails($db, $user, $matches[1]));
+        return;
+    }
+    if (preg_match('#^/trips/([A-Za-z0-9_-]{1,100})/items/order$#D', $path, $matches)) {
+        $user = requireUser($db);
+        if ($method !== 'PUT') {
+            header('Allow: PUT');
+            throw new ApiError(405, 'METHOD_NOT_ALLOWED', '此 API 不支援這個操作。');
+        }
+        requireCsrf();
+        jsonResponse(reorderItems($db, $user, $matches[1], readJsonBody()));
+        return;
+    }
+    if (preg_match('#^/trips/([A-Za-z0-9_-]{1,100})/(items|expenses)$#D', $path, $matches)) {
+        $user = requireUser($db);
+        if ($method !== 'POST') {
+            header('Allow: POST');
+            throw new ApiError(405, 'METHOD_NOT_ALLOWED', '此 API 不支援這個操作。');
+        }
+        requireCsrf();
+        $body = readJsonBody();
+        $details = $matches[2] === 'items'
+            ? mutateItem($db, $user, $matches[1], 'POST', null, $body)
+            : mutateExpense($db, $user, $matches[1], 'POST', null, $body);
+        jsonResponse($details, 201);
+        return;
+    }
+    if (preg_match('#^/trips/([A-Za-z0-9_-]{1,100})/(items|expenses)/([A-Za-z0-9_-]{1,100})$#D', $path, $matches)) {
+        $user = requireUser($db);
+        if (!in_array($method, ['PATCH', 'DELETE'], true)) {
+            header('Allow: PATCH, DELETE');
+            throw new ApiError(405, 'METHOD_NOT_ALLOWED', '此 API 不支援這個操作。');
+        }
+        requireCsrf();
+        $body = readJsonBody();
+        $details = $matches[2] === 'items'
+            ? mutateItem($db, $user, $matches[1], $method, $matches[3], $body)
+            : mutateExpense($db, $user, $matches[1], $method, $matches[3], $body);
+        jsonResponse($details);
+        return;
+    }
     if (preg_match('#^/trips/([A-Za-z0-9_-]{1,100})$#D', $path, $matches)) {
         $user = requireUser($db);
         $id = $matches[1];

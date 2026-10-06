@@ -17,7 +17,7 @@ function findReadableTrip(\PDO $db, string $id, string $userId): array
 function requireTripOwner(array $row, array $user): void
 {
     if ($row['owner_id'] !== $user['id'] || $user['role'] !== 'guest') {
-        throw new ApiError(403, 'FORBIDDEN', '只有行程建立者可以修改基本資料。');
+        throw new ApiError(403, 'FORBIDDEN', '只有行程建立者可以修改行程。');
     }
 }
 
@@ -173,6 +173,7 @@ function updateTrip(\PDO $db, array $user, string $id, array $body): array
             }
         }
         $values = validateTripFields($values);
+        assertDetailsWithinDates($db, $id, $values['startDate'], $values['endDate']);
         $manual = array_key_exists('status', $body) ? 1 : (int) $row['status_manual'];
         $statement = $db->prepare('UPDATE trips SET name = ?, start_date = ?, end_date = ?, station = ?, budget = ?, status = ?, status_manual = ?, version = version + 1, updated_at = ? WHERE id = ? AND owner_id = ? AND version = ?');
         $statement->execute([$values['name'], $values['startDate'], $values['endDate'], $values['station'], $values['budget'], $values['status'], $manual, utcNow(), $id, $user['id'], $version]);

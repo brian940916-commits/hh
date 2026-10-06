@@ -5,7 +5,7 @@ pageHead('Agent TT — 我的行程', 'trip-list.html');
 $legacy = prototypeHtml('trip-list.html');
 preg_match('/<body>(.*?)<script/s', $legacy, $matches);
 $body = $matches[1] ?? '';
-$body = str_replace('<div id="app">', '<div id="app"><div class="page-container" style="padding-top:20px"><p class="scope-note">目前可建立與管理行程名稱、日期、車站、預算及狀態。行程内容、成員邀請、分享、住宿與票券將於後續開放。</p><div id="page-message" role="status" style="margin-top:12px"></div></div>', $body);
+$body = str_replace('<div id="app">', '<div id="app"><div class="page-container" style="padding-top:20px"><p class="scope-note">可管理基本資料、編排行程並記錄費用。住宿訂單、票券、成員邀請與分享尚未開放。</p><div id="page-message" role="status" style="margin-top:12px"></div></div>', $body);
 $body = str_replace('<button class="btn btn-primary" onclick="openCreateModal()">', '<button class="btn btn-primary" id="create-trip-btn" onclick="openCreateModal()" disabled>', $body);
 $body = str_replace('<div id="trip-list"></div>', '<div id="list-error" class="page-error" role="alert" hidden><p id="list-error-text"></p><button class="btn btn-outline btn-sm" id="list-retry-btn" type="button" style="margin-top:8px">重新載入</button></div><div id="trip-list" aria-live="polite"><p>正在載入行程…</p></div>', $body);
 $body = str_replace('✅ 確認以下行程資訊後，點擊「建立行程」即可開始規劃！', '確認以下資訊後，點擊「建立行程」儲存。', $body);

@@ -33,7 +33,8 @@ def wait_ready(process, base):
         if process.poll() is not None:
             raise RuntimeError("PHP server exited before the health check passed")
         try:
-            with urllib.request.urlopen(base + "/api/index.php?path=%2Fhealth", timeout=1) as response:
+            opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+            with opener.open(base + "/api/index.php?path=%2Fhealth", timeout=1) as response:
                 if response.status == 200 and "data" in json.load(response):
                     return
         except (OSError, ValueError, urllib.error.URLError):
@@ -49,9 +50,10 @@ def main():
     parser.add_argument("--playwright-module", default=os.environ.get("PLAYWRIGHT_MODULE"))
     parser.add_argument("--chromium", default=os.environ.get("CHROMIUM_EXECUTABLE"))
     args = parser.parse_args()
+    subprocess.run([sys.executable, str(ROOT / "tests/migration_acceptance.py"), "--php", args.php], check=True)
     with tempfile.TemporaryDirectory(prefix="agenttt-acceptance-") as temp:
         data_dir = Path(temp) / "data"
-        env = dict(os.environ, AGENTTT_DATA_DIR=str(data_dir))
+        env = dict(os.environ, AGENTTT_DATA_DIR=str(data_dir), PYTHONDONTWRITEBYTECODE="1")
         if args.playwright_module:
             env["PLAYWRIGHT_MODULE"] = args.playwright_module
         if args.chromium:
@@ -70,23 +72,28 @@ def main():
                 process = subprocess.Popen(command, cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT)
                 wait_ready(process, base)
                 subprocess.run([sys.executable, str(ROOT / "tests/backend_http.py"), "--base-url", base, "--data-dir", str(data_dir), "--php", args.php], env=env, check=True)
+                subprocess.run([sys.executable, str(ROOT / "tests/backend_phase2.py"), "--base-url", base, "--data-dir", str(data_dir), "--php", args.php], env=env, check=True)
                 databases = list(data_dir.glob("*.sqlite")) + list(data_dir.glob("*.sqlite3")) + list(data_dir.glob("*.db"))
                 if len(databases) != 1:
                     raise RuntimeError("Expected a single acceptance SQLite database")
                 with sqlite3.connect(databases[0]) as db:
-                    before = db.execute("SELECT * FROM trips ORDER BY id").fetchall()
+                    tables = [row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")]
+                    before = {table: db.execute('SELECT * FROM "' + table + '" ORDER BY 1,2').fetchall() for table in tables}
                 stop(process)
                 process = subprocess.Popen(command, cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT)
                 wait_ready(process, base)
                 with sqlite3.connect(databases[0]) as db:
-                    after = db.execute("SELECT * FROM trips ORDER BY id").fetchall()
+                    after = {table: db.execute('SELECT * FROM "' + table + '" ORDER BY 1,2').fetchall() for table in tables}
                 if before != after:
-                    raise AssertionError("Server restart changed or lost stored trips")
-                print("PASS: persisted SQLite trips survive a real PHP server restart", flush=True)
+                    raise AssertionError("Server restart changed or lost SQLite rows")
+                print("PASS: trips, items, expenses, participants and receipts survive a real PHP server restart", flush=True)
                 if args.http_only:
                     print("Browser tests not requested (--http-only).", flush=True)
                 else:
+                    fixture = subprocess.run([sys.executable, str(ROOT / "tests/backend_phase2.py"), "--base-url", base, "--data-dir", str(data_dir), "--php", args.php, "--create-browser-fixture"], env=env, check=True, capture_output=True, text=True)
+                    env["AGENTTT_PHASE2_MEMBER_TRIP_ID"] = json.loads(fixture.stdout)["memberTripId"]
                     subprocess.run(["node", str(ROOT / "tests/browser_acceptance.cjs")], cwd=ROOT, env=env, check=True)
+                    subprocess.run(["node", str(ROOT / "tests/browser_phase2.cjs")], cwd=ROOT, env=env, check=True)
         except Exception:
             stop(process)
             print("PHP server log:", file=sys.stderr)

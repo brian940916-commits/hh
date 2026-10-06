@@ -23,7 +23,10 @@ ROOT = Path(__file__).resolve().parents[1]
 class Client:
     def __init__(self):
         self.cookies = http.cookiejar.CookieJar()
-        self.opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(self.cookies))
+        handlers = [urllib.request.HTTPCookieProcessor(self.cookies)]
+        if urllib.parse.urlparse(CONFIG.base_url).hostname in ("127.0.0.1", "localhost", "::1"):
+            handlers.insert(0, urllib.request.ProxyHandler({}))
+        self.opener = urllib.request.build_opener(*handlers)
         self.csrf = None
         self.user_id = None
 
@@ -341,7 +344,7 @@ class BackendAcceptance(unittest.TestCase):
             with self.subTest(path=path):
                 request = urllib.request.Request(CONFIG.base_url.rstrip("/") + path)
                 try:
-                    response = urllib.request.urlopen(request, timeout=10)
+                    response = self.client.opener.open(request, timeout=10)
                 except urllib.error.HTTPError as error:
                     response = error
                 with response:

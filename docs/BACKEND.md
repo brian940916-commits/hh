@@ -1,4 +1,4 @@
-# 第一階段後端
+# PHP／SQLite 後端
 
 PHP 8.2以上／PDO SQLite，不使用Composer或框架。頁面與API同源；API透過 `api/index.php?path=...`，因此XAMPP子目錄不需要mod_rewrite。資料庫、session及後端實作位於public之外。
 
@@ -40,6 +40,34 @@ SQLite使用users、trips、trip_members與request_receipts資料表。SQL參數
 
 ## 前端範圍
 
-`public/login.php`、`public/trip-list.php`與共用API client使用session及SQLite。API錯誤不会回退至localStorage，也不因空快取提早顯示沒有行程。建立成功返回列表；目前不把後端ID傳到尚未串接的景點／協作頁。
+`public/login.php`、`public/trip-list.php`、`public/trip-edit.php`、`public/trip-expense.php`與共用API client使用session及SQLite。API錯誤不會回退至localStorage，也不因空快取提早顯示沒有行程。列表提供明細與費用入口，使用伺服器產生的行程ID。
 
-舊根目錄HTML／JS保留供後續串接，不當作第一階段PHP入口。前端不自動匯入舊localStorage帳號、票券與模擬訂單。註冊、社群／SMS登入、完整行程、住宿及票券需後續獨立實作。
+舊根目錄HTML／JS保留供後續串接，不當作PHP入口。前端不自動匯入舊localStorage帳號、票券與模擬訂單。註冊、社群／SMS登入、邀請協作、公開分享、住宿訂單及票券需後續獨立實作。
+
+## 第二階段：每日安排與費用
+
+`GET /trips/{id}/details` 回傳 `{trip, items, expenses, summary}`。`trip` 沿用基本資料格式與 `version`；owner與已加入的member可閱讀。所有明細、費用寫入只提供給行程owner，並驗證旅客角色及CSRF。
+
+| 方法 | path | 請求內容 |
+| --- | --- | --- |
+| POST | /trips/{id}/items | version及新項目；另帶Idempotency-Key |
+| PATCH | /trips/{id}/items/{itemId} | version及要修改的欄位 |
+| DELETE | /trips/{id}/items/{itemId} | version |
+| PUT | /trips/{id}/items/order | version、date、該日期完整itemIds陣列 |
+| POST | /trips/{id}/expenses | version及新支出；另帶Idempotency-Key |
+| PATCH | /trips/{id}/expenses/{expenseId} | version及要修改的欄位 |
+| DELETE | /trips/{id}/expenses/{expenseId} | version |
+
+這些寫入共享整個行程的version，成功後加1並回傳完整details；POST為201，其餘為200。跨分頁先修改費用或基本資料，也會使舊明細版本過期。409時前端保留輸入並載入新資料，使用者核對後才能重送；刪除需重新確認。相同POST的冪等重試可以恢復已提交的結果，沒有第二筆新增。
+
+每日項目欄位為 `date`、`startTime`、`endTime`、`name`、`type`、`note`、`priority`；ID、tripId與position由後端決定。日期必須在行程範圍內，時間為HH:MM且結束晚於開始；名稱1–80字、備註最多1000字。type為attraction／restaurant／activity／hotel／train，priority為must／optional。position從0開始，同一天連續；跨日編輯追加在新日期尾端，排序API必須傳同一天完整、不重複的項目ID。時間重疊由前端提示，允許保留備選安排。
+
+費用欄位為 `name`、`amount`、`category`、`date`、`payerId`、`participantIds`、`note`。金額為1至1,000,000,000的整數台幣；category為transport／accommodation／food／activity／other，日期在行程內。付款人與分攤人只能使用該行程真實成員的userId；分攤名單去重並排序，至少一人。
+
+summary提供總支出、預算、餘額、是否超支、分類總額、各人已付與應分攤金額、建議結算。每筆支出均分給所選participantIds，無法整除的餘數依userId固定順序分配，每人差額為paid-share。計算使用整數，所有差額加總為0，結算金額可完全平衡；這些資料不代表真的付款或轉帳。預算仍使用基本資料PATCH更新。
+
+基本資料修改若縮短日期會排除現有每日項目或費用，回422要求先移動或刪除範圍外資料，不會默默刪除。刪除整個行程則透過foreign key cascade移除其明細與費用。
+
+## 資料庫升級
+
+新版本使用schema2。啟動時，在SQLite IMMEDIATE交易內從schema1新增明細、費用與分攤資料表；保留原有users、密碼雜湊、trips、members與request_receipts，不重跑示範資料、不重設行程。新資料庫先完成基礎初始化再升級，重复初始化不會清空資料。完整Windows備份與更新方式見 [XAMPP-WINDOWS.md](XAMPP-WINDOWS.md#更新既有版本保留資料)。

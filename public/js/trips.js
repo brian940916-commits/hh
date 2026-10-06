@@ -112,8 +112,16 @@
       element('span', 'trip-meta-item', '🗓 ' + days(trip.startDate, trip.endDate) + ' 天'));
     info.append(title, meta, element('p', 'trip-budget', '預估預算：NT$ ' + Number(trip.budget).toLocaleString('zh-TW')));
     row.append(info);
+    const actions = element('div', 'trip-actions');
+    const query = '?tripId=' + encodeURIComponent(trip.id);
+    const details = element('a', 'btn btn-primary btn-sm', '行程編排');
+    details.href = 'trip-edit.php' + query;
+    details.dataset.action = 'details';
+    const expenses = element('a', 'btn btn-outline btn-sm', '費用管理');
+    expenses.href = 'trip-expense.php' + query;
+    expenses.dataset.action = 'expenses';
+    actions.append(details, expenses);
     if (editable(trip)) {
-      const actions = element('div', 'trip-actions');
       const edit = element('button', 'btn btn-primary btn-sm', '編輯基本資料');
       edit.dataset.action = 'edit';
       edit.addEventListener('click', () => openEditModal(trip.id));
@@ -130,8 +138,8 @@
       remove.dataset.action = 'delete';
       remove.addEventListener('click', () => openDeleteModal(trip.id));
       actions.append(edit, select, remove);
-      row.append(actions);
     }
+    row.append(actions);
     return row;
   }
 

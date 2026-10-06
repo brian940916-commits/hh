@@ -13,7 +13,7 @@ $illustration = ($start !== false && $end !== false) ? substr($legacy, $start, $
   <div class="login-right">
     <div class="login-logo-row"><div class="login-logo-name">Agent TT</div></div>
     <h1 style="font-size:22px;margin-bottom:12px">登入練習平台</h1>
-    <p class="scope-note" style="margin-bottom:20px">目前可登入並管理行程基本資料。住宿、票券、行程內容與分享將於後續開放。</p>
+    <p class="scope-note" style="margin-bottom:20px">可管理行程、安排每日活動並記錄費用。住宿訂單、票券與分享尚未開放。</p>
     <div style="font-size:12px;color:#8A8073;margin-bottom:10px">選擇練習帳號（身份由帳號決定）</div>
     <div class="role-cards" role="group" aria-label="練習帳號">
       <button type="button" class="role-card selected-guest" id="role-guest" onclick="selectRole('guest')"><span class="role-icon">🧳</span><span class="role-label">旅客</span></button>
