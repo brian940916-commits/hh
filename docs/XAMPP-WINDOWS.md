@@ -1,0 +1,76 @@
+# Windows／XAMPP：第一次啟動
+
+這份步驟針對 `hh` 的 PHP＋SQLite 第一階段。XAMPP 只需 Apache，資料庫是 SQLite，不需要啟動 MySQL。
+
+## 1. 安裝與放置檔案
+
+1. 若目前只有下載安裝檔，先完成 XAMPP 安裝。以下以預設路徑 `C:\xampp` 為例。
+2. 取得本次更新的 `hh` 或交付 ZIP。將專案放在新的資料夾 `C:\xampp\htdocs\hh-lab`，保留之前下載的副本。
+3. 確认該資料夾直接含有 `public`、`backend`、`scripts`、`docs` 及原本的 HTML 檔。避免解壓後多一層資料夾。
+4. `.htaccess` 是 Apache 的存取設定檔，要一併保留；不要只複製 `public`。
+
+## 2. 啟用 SQLite
+
+在 XAMPP Control Panel，點 Apache 旁的 **Config → PHP (php.ini)**。搜尋 `pdo_sqlite`，確認這行未被前面的分號註解：
+
+```ini
+extension=pdo_sqlite
+```
+
+有些版本寫成 `extension=php_pdo_sqlite.dll`，啟用原本那一行即可，不要重複加兩行。SQLite3 擴充不是這版必要條件；程式透過 PDO SQLite 使用資料庫。儲存後，在 Control Panel 停止並重新啟動 Apache。
+
+也可在 PowerShell 檢查 CLI：
+
+```powershell
+& 'C:\xampp\php\php.exe' -r 'echo PHP_VERSION, PHP_EOL; print_r(PDO::getAvailableDrivers());'
+```
+
+版本需至少8.2，drivers清單需有 `sqlite`。若 Apache 使用不同的 PHP 設定，以 Control Panel 的 Config 指向檔案為準。
+
+## 3. 開啟平台
+
+在 Control Panel 按 **Apache → Start**，等狀態變成執行中。接著用瀏覽器開啟：
+
+```text
+http://localhost/hh-lab/public/
+```
+
+若 Apache 設為8080埠，網址改為 `http://localhost:8080/hh-lab/public/`。首次 API 請求會建立資料庫與示範帳號；重新整理不會重置資料。
+
+旅客使用 `test@test.com / test123`，第二位旅客使用 `other@test.com / test123`。房東及管理員可登入驗證角色，但業務功能在後續階段串接。
+
+也可先執行一次初始化，重複執行不會清空資料：
+
+```powershell
+Set-Location 'C:\xampp\htdocs\hh-lab'
+& 'C:\xampp\php\php.exe' scripts\init-db.php
+```
+
+## 4. 自己確認一次
+
+1. 以旅客登入，建立行程，確認留在行程列表並能看到新行程。
+2. 編輯名稱／日期／車站／預算，設定狀態，重新整理後確認內容仍存在。
+3. 停止 Apache，再啟動，重新登入確認行程仍存在。
+4. 登出後以 `other@test.com` 登入，確認看不到第一位旅客建立的行程。
+5. 回第一位旅客刪除行程，再重新整理確認已刪除。
+
+第一階段僅開放行程基本資料；景點、分享、協作、住宿與票券沒有冒充已串接完成。
+
+## 遇到問題
+
+| 現象 | 處理方式 |
+| --- | --- |
+| Apache無法Start | 開啟Apache的Logs，看是否80／443埠被占用；若換埠，網址也加上該埠 |
+| 404找不到頁面 | 確认是 `htdocs\hh-lab\public\index.php`，以及網址包含 `/public/` |
+| PHP程式變成下載檔或原始文字 | 要從Apache網址進入，確認Apache及PHP模組啟動，不使用檔案總管直接開PHP檔 |
+| API連不上／SQLite不可用 | 核對PDO SQLite設定並重啟Apache，再查看Apache error log |
+| 403禁止存取 | `/hh-lab/` 根目錄被刻意保護；請開 `/hh-lab/public/`。若public也403，確認完整保留 `public/.htaccess` |
+| 資料庫無法寫入 | 確认專案的 `storage` 可由XAMPP Apache寫入，且未放在唯讀磁碟；先用初始化命令檢查 |
+
+可以提供錯誤訊息與你使用的網址來定位問題；不需要提供密碼或session cookie。
+
+## 資料保存
+
+資料庫與session保存在專案 `storage/`，不是瀏覽器localStorage。重新整理、清掉localStorage或重啟Apache不會删除SQLite資料。要搬移練習資料，先停止Apache，備份整個storage資料夾；登入session不必搬移。初始化不會自動匯入舊版瀏覽器的模擬資料。
+
+後端設定、storage與`.git`不應由HTTP直接下載；`.htaccess`需要Apache允許覆寫存取設定。若自行建立VirtualHost，將DocumentRoot直接設為專案的 `public` 資料夾，並允許該資料夾的存取設定。

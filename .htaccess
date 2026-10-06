@@ -1,0 +1,3 @@
+# Protect repository, backend code, databases, sessions and old prototype pages.
+# Open /hh/public/ in XAMPP; public/.htaccess grants access only to that directory.
+Require all denied

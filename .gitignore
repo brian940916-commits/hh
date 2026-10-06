@@ -3,3 +3,13 @@ agent_tt/
 
 # Windows Zone.Identifier metadata
 *.html:Zone.Identifier
+
+# Local SQLite databases and PHP sessions (never commit practice data).
+/storage/
+/test-results/
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+__pycache__/
+*.pyc

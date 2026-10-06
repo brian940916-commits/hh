@@ -1,0 +1,12 @@
+Require all granted
+Options -Indexes
+DirectoryIndex index.php
+
+<FilesMatch "^\.|^router\.php$|\.(sqlite|db|ini|log|bak|zip|bundle)$">
+    Require all denied
+</FilesMatch>
+
+# Only the intentionally public PHP entrypoints can be requested directly.
+<FilesMatch "(?i)^(?!(?:index|login|trip-list|assets)\.php$).*\.php$">
+    Require all denied
+</FilesMatch>

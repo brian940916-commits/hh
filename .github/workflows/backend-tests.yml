@@ -1,0 +1,47 @@
+name: PHP and browser acceptance
+
+on:
+  push:
+    branches: [backend-lab, main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up PHP and SQLite
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_sqlite, sqlite3
+          coverage: none
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install frozen browser dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Check PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r file; do
+            php -l "$file"
+          done < <(git ls-files --cached --others --exclude-standard 'public/*.php' 'backend/*.php' 'scripts/*.php')
+
+      - name: Test isolated HTTP, server restart, and browser flows
+        run: python3 tests/run_acceptance.py
